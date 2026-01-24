@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmShield | Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Loading Spinner Animation */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #16a34a; /* Green-600 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <aside class="w-64 bg-green-900 text-white flex flex-col p-6 fixed h-full">
+        <div class="text-2xl font-bold mb-10 flex items-center gap-3 text-yellow-400">
+            <i class="fas fa-shield-alt"></i> FarmShield
+        </div>
+        
+        <nav class="flex-1 space-y-2">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-white/10 rounded-lg text-white">
+                <i class="fas fa-th-large w-5"></i> Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg text-gray-300 transition">
+                <i class="fas fa-leaf w-5"></i> My Crops
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 hover:bg-white/5 rounded-lg text-gray-300 transition">
+                <i class="fas fa-robot w-5"></i> Sahayak Bot
+            </a>
+        </nav>
+
+        <button onclick="alert('SOS Signal Sent!')" class="mt-auto bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition animate-pulse">
+            <i class="fas fa-broadcast-tower"></i> SOS ALERT
+        </button>
+    </aside>
+
+    <main class="flex-1 ml-64 p-8 overflow-y-auto">
+        
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Welcome, Ram Singh</h1>
+                <p class="text-gray-500 text-sm">Kothri Kalan • 2.5 Hectares</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="border border-green-600 text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition">
+                    🇮🇳 हिंदी
+                </button>
+                <div class="w-10 h-10 bg-green-200 rounded-full flex items-center justify-center text-green-800 font-bold">
+                    R
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-3 gap-6">
+            
+            <div class="col-span-2 space-y-6">
+                
+                <div class="bg-gradient-to-r from-green-600 to-emerald-500 rounded-2xl p-6 text-white flex justify-between items-center shadow-lg">
+                    <div class="flex items-center gap-6">
+                        <i class="fas fa-sun text-6xl opacity-90"></i>
+                        <div>
+                            <div class="text-4xl font-bold">32°C</div>
+                            <div class="text-green-100">Clear Sky • Humidity 45%</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <h3 class="font-bold text-lg">Irrigation Advice</h3>
+                        <p class="text-green-100 text-sm">Safe to water crops today.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-gray-800 mb-4 text-lg">AI Crop Doctor</h3>
+                    
+                    <input type="file" id="leafInput" class="hidden" accept="image/*" onchange="uploadToPython()">
+                    
+                    <div onclick="document.getElementById('leafInput').click()" 
+                         class="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer hover:bg-green-50 hover:border-green-400 transition group">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 group-hover:text-green-500 mb-3 transition"></i>
+                        <h4 class="font-semibold text-gray-600">Click to Upload Leaf Image</h4>
+                        <p class="text-xs text-gray-400 mt-2">Supports JPG, PNG • Instant Analysis</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="space-y-6">
+                
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-gray-800 mb-4">Mandi Prices (Live)</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span class="text-gray-600">Wheat</span>
+                            <span class="text-green-600 font-bold">₹2,125 <i class="fas fa-arrow-up text-xs"></i></span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span class="text-gray-600">Tomato</span>
+                            <span class="text-red-500 font-bold">₹1,200 <i class="fas fa-arrow-down text-xs"></i></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Soybean</span>
+                            <span class="text-green-600 font-bold">₹4,800 <i class="fas fa-arrow-up text-xs"></i></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                    <div class="flex gap-3">
+                        <i class="fas fa-exclamation-triangle text-red-500 mt-1"></i>
+                        <div>
+                            <h4 class="font-bold text-red-800 text-sm">Pest Warning</h4>
+                            <p class="text-red-600 text-xs mt-1">High risk of Late Blight reported in your district.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <div id="scanModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white w-[500px] rounded-2xl p-8 relative text-center">
+            <button onclick="closeScan()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            
+            <div id="scanLoading">
+                <div class="loader mb-4"></div>
+                <h3 class="text-xl font-bold text-gray-800">Analyzing Leaf...</h3>
+                <p class="text-gray-500 text-sm mt-2">Checking for 10,000+ diseases</p>
+            </div>
+
+            <div id="scanResult" class="hidden text-left">
+                <span class="bg-red-100 text-red-600 text-xs font-bold px-3 py-1 rounded-full mb-4 inline-block">DIAGNOSIS COMPLETE</span>
+                
+                <div class="flex gap-4 mb-6">
+                    <img id="scanImage" src="" class="w-24 h-24 object-cover rounded-lg border border-gray-200">
+                    <div>
+                        <h2 id="diseaseTitle" class="text-2xl font-bold text-gray-800">...</h2>
+                        <p id="diseaseDesc" class="text-sm text-gray-500 mt-1 leading-relaxed">...</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-xl">
+                    <h4 class="font-bold text-gray-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-medkit text-green-600"></i> Recommended Cure
+                    </h4>
+                    <ul id="treatmentList" class="list-disc pl-5 space-y-2 text-sm text-gray-600">
+                        <li>Loading...</li>
+                    </ul>
+                </div>
+
+                <button onclick="closeScan()" class="w-full mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function uploadToPython() {
+            const fileInput = document.getElementById('leafInput');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Show Modal & Loading
+            const modal = document.getElementById('scanModal');
+            const loading = document.getElementById('scanLoading');
+            const result = document.getElementById('scanResult');
+            
+            modal.style.display = 'flex';
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            // Prepare Data
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                // Send to Python
+                console.log("Sending to Brain...");
+                const response = await fetch("http://127.0.0.1:8000/api/analyze", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+                console.log("Brain Answer:", data);
+
+                if (data.error) {
+                    alert("Error: " + data.error);
+                    modal.style.display = 'none';
+                    return;
+                }
+
+                // Update UI
+                document.getElementById('diseaseTitle').innerText = data.disease_name || "Unknown";
+                document.getElementById('diseaseDesc').innerText = data.description || "No description.";
+                
+                // Show Image
+                const reader = new FileReader();
+                reader.onload = (e) => document.getElementById('scanImage').src = e.target.result;
+                reader.readAsDataURL(file);
+
+                // Update List
+                const list = document.getElementById('treatmentList');
+                list.innerHTML = ""; 
+                if (data.treatment_steps) {
+                    data.treatment_steps.forEach(step => {
+                        let li = document.createElement("li");
+                        li.innerText = step;
+                        list.appendChild(li);
+                    });
+                }
+
+                // Show Result
+                loading.style.display = 'none';
+                result.style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                alert("Cannot connect to Python. Is uvicorn running?");
+                modal.style.display = 'none';
+            }
+        }
+
+        function closeScan() {
+            document.getElementById('scanModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
