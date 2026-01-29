@@ -1,6 +1,6 @@
-import { Sprout, CloudLightning, ScanLine, Bot, MapPin, ArrowRight } from 'lucide-react';
+import { Sprout, CloudLightning, ScanLine, Bot, MapPin, ArrowRight, Sun } from 'lucide-react';
 
-export default function DashboardHome({ setActiveTab }) {
+export default function DashboardHome({ setActiveTab, location }) {
   
   const features = [
     {
@@ -41,20 +41,22 @@ export default function DashboardHome({ setActiveTab }) {
     <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       
       {/* Hero Section */}
-      <div className="glass-panel p-6 md:p-8 rounded-3xl relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/20 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-green-500/30 transition duration-700"></div>
+      <div className="glass-panel p-6 md:p-8 rounded-3xl relative overflow-hidden group flex justify-between">
+        
+        {/* Light Effect - Repositioned to Top-Center */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-green-500/20 rounded-full blur-3xl -mt-16 group-hover:bg-green-500/30 transition duration-700"></div>
         
         <div className="relative z-10">
           <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white">Farm Overview</h2>
           <p className="text-green-100/70 max-w-xl text-sm md:text-base">
-            Everything looks good at <span className="text-white font-semibold">Kothri Kalan</span>. 
+            Everything looks good at <span className="text-white font-semibold">{location}</span>. 
             Soil moisture is optimal. No storms predicted today.
           </p>
           
           <div className="flex flex-wrap gap-3 mt-6">
             <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/5 border border-white/10">
               <MapPin size={14} className="text-red-400" />
-              <span className="text-xs md:text-sm">Madhya Pradesh, IN</span>
+              <span className="text-xs md:text-sm">{location}</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white/5 border border-white/10">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
@@ -62,10 +64,16 @@ export default function DashboardHome({ setActiveTab }) {
             </div>
           </div>
         </div>
+
+        {/* Sun Icon - Added in the encircled area */}
+        <div className="relative z-10 ml-auto">
+          <Sun size={164} className="text-yellow-400/80" />
+        </div>
       </div>
 
-      {/* Feature Grid - STACKS ON MOBILE */}
+      {/* Feature Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {/* ... (The rest of your feature buttons remain the same) ... */}
         {features.map((item) => {
           const Icon = item.icon;
           return (
