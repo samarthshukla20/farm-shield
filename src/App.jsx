@@ -8,29 +8,30 @@ export default function App() {
   return (
     <div className="flex min-h-screen text-white selection:bg-green-500/30">
       
-      {/* 1. Sidebar */}
+      {/* Responsive Navigation */}
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* 2. Main Content */}
-      <main className="flex-1 ml-[290px] p-8">
+      {/* Main Content */}
+      {/* Added: 'pb-24' for mobile bottom bar, 'md:ml-[290px]' for desktop sidebar */}
+      <main className="flex-1 w-full md:ml-[290px] p-4 md:p-8 pb-24 md:pb-8 transition-all duration-300">
         
-        {/* Header (Language Toggle Placeholder) */}
-        <header className="flex justify-between items-center mb-8">
+        {/* Header */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-1">Welcome, User 🌿</h1>
-            <p className="text-green-200/80 text-sm">Sun, 1 Feb • Good Morning</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-1">Welcome, User 🌿</h1>
+            <p className="text-green-200/80 text-sm">Sat, 26 Jan • Good Morning</p>
           </div>
           
-          <button className="glass-panel px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-white/10 transition">
+          <button className="glass-panel px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-white/10 transition self-end md:self-auto">
             <span>🌐</span>
-            <span className="font-semibold">English</span>
+            <span className="font-semibold text-sm">English</span>
           </button>
         </header>
 
-        {/* 3. The Views */}
+        {/* Content Views */}
         {activeTab === 'dashboard' && <DashboardHome setActiveTab={setActiveTab} />}
         
-        {/* Placeholders for other tabs (to be built later) */}
+        {/* Placeholder for other tabs */}
         {activeTab !== 'dashboard' && (
           <div className="glass-panel p-10 rounded-3xl text-center min-h-[400px] flex flex-col items-center justify-center">
             <h2 className="text-2xl font-bold text-white/50">Feature Coming Soon</h2>
