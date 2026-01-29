@@ -20,7 +20,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           </div>
           <div>
             <h1 className="text-xl font-bold text-white tracking-wide">FarmShield</h1>
-            <p className="text-xs text-green-200 font-medium">AI Guard 2.0</p>
+            <p className="text-xs text-green-200 font-medium">AI Guard</p>
           </div>
         </div>
 
