@@ -10,49 +10,62 @@ export default function App() {
   const [greeting, setGreeting] = useState('Welcome');
   const [location, setLocation] = useState('Detecting Location...');
 
-  // --- 1. HANDLE TIME & GREETING ---
+  // --- 1. ENABLE BROWSER BACK BUTTON (Hash Routing) ---
+  useEffect(() => {
+    const handleHashChange = () => {
+      // Read the URL hash (e.g., #crops) and update the tab
+      const hash = window.location.hash.replace('#', '');
+      if (hash) setActiveTab(hash);
+      else setActiveTab('dashboard');
+    };
+
+    // Listen for browser Back/Forward clicks
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Check URL on first load (so refreshing on #crops works)
+    handleHashChange();
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Custom Navigation Function: Updates UI + URL
+  const navigate = (tabId) => {
+    setActiveTab(tabId);
+    window.location.hash = tabId; // This pushes to browser history
+  };
+
+  // --- 2. HANDLE TIME & GREETING ---
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      
-      // Format Date: "Fri, 30 Jan"
       const options = { weekday: 'short', day: 'numeric', month: 'short' };
       setCurrentDate(now.toLocaleDateString('en-GB', options));
-
-      // Set Greeting based on hour
       const hour = now.getHours();
       if (hour < 12) setGreeting("Good Morning");
       else if (hour < 18) setGreeting("Good Afternoon");
       else setGreeting("Good Evening");
     };
-
-    updateTime(); // Run immediately
-    const timer = setInterval(updateTime, 60000); // Update every minute
+    updateTime();
+    const timer = setInterval(updateTime, 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // --- 2. HANDLE LOCATION (Reverse Geocoding) ---
+  // --- 3. HANDLE LOCATION ---
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          // Use OpenStreetMap (Free API) to get address
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
           const data = await res.json();
-          
-          // Extract useful parts (Village, District, State)
           const addr = data.address;
           const locName = addr.village || addr.town || addr.city || addr.county || "Unknown Location";
           const stateCode = addr.state_district || addr.state || "";
-          
           setLocation(`${locName}, ${stateCode}`);
         } catch (error) {
           setLocation("Location Unavailable");
         }
-      }, () => {
-        setLocation("Permission Denied");
-      });
+      }, () => setLocation("Permission Denied"));
     } else {
       setLocation("GPS Not Supported");
     }
@@ -61,20 +74,17 @@ export default function App() {
   return (
     <div className="flex min-h-screen text-white selection:bg-green-500/30">
       
-      {/* Sidebar Navigation */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Pass 'navigate' instead of 'setActiveTab' so clicks update the URL */}
+      <Sidebar activeTab={activeTab} setActiveTab={navigate} />
 
       <main className="flex-1 w-full md:ml-[290px] p-4 md:p-8 pb-24 md:pb-8 transition-all duration-300">
         
         {/* --- HEADER --- */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
-            {/* Dynamic Greeting & User Name */}
             <h1 className="text-2xl md:text-3xl font-bold mb-1">
               {greeting}, User 🌿
             </h1>
-            
-            {/* Dynamic Date & Location */}
             <div className="flex items-center gap-2 text-green-200/80 text-sm font-medium">
               <span>{currentDate}</span>
               <span>•</span>
@@ -92,19 +102,14 @@ export default function App() {
         </header>
 
         {/* --- VIEWS --- */}
+        {activeTab === 'dashboard' && <DashboardHome setActiveTab={navigate} location={location} />}
         
-        {/* 1. Dashboard Tab */}
-        {activeTab === 'dashboard' && (
-  <DashboardHome setActiveTab={setActiveTab} location={location} />
-)}
-        
-        {/* 2. Other Tabs (Placeholders for now) */}
         {activeTab !== 'dashboard' && (
           <div className="glass-panel p-10 rounded-3xl text-center min-h-[400px] flex flex-col items-center justify-center">
             <h2 className="text-2xl font-bold text-white/50">Feature Coming Soon</h2>
             <p className="text-green-200/40 mt-2 mb-6">We are building the {activeTab} module.</p>
             <button 
-              onClick={() => setActiveTab('dashboard')} 
+              onClick={() => navigate('dashboard')} 
               className="px-6 py-2 bg-white/10 rounded-xl hover:bg-white/20 transition text-sm font-medium"
             >
               Go Back Home
