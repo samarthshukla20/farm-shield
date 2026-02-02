@@ -1,13 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-# Import the crop feature we made
 from router_crops import router as crops_router
+from router_weather import router as weather_router
 
-# Initialize the App
-app = FastAPI()  # <--- THIS IS THE MISSING LINE CAUSING THE ERROR
+app = FastAPI()
 
-# Setup Connectivity (CORS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,8 +13,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Connect the Crop Advisor Feature
 app.include_router(crops_router)
+app.include_router(weather_router)
 
 # Health Check
 @app.get("/")

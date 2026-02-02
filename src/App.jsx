@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import DashboardHome from './components/DashboardHome';
-import CropAdvisor from './components/CropAdvisor'; // <--- 1. IMPORTED HERE
+import CropAdvisor from './components/CropAdvisor';
+import WeatherStation from './components/WeatherStation';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -102,9 +103,11 @@ export default function App() {
         
         {/* --- 2. RENDER CROP ADVISOR HERE --- */}
         {activeTab === 'crops' && <CropAdvisor setActiveTab={navigate} />}
+
+        {activeTab === 'weather' && <WeatherStation setActiveTab={navigate} />}
         
         {/* Placeholder for other tabs (Excluding crops now) */}
-        {activeTab !== 'dashboard' && activeTab !== 'crops' && (
+        {activeTab !== 'dashboard' && activeTab !== 'crops' && activeTab !== 'weather' && (
           <div className="glass-panel p-10 rounded-3xl text-center min-h-[400px] flex flex-col items-center justify-center">
             <h2 className="text-2xl font-bold text-white/50">Feature Coming Soon</h2>
             <p className="text-green-200/40 mt-2 mb-6">We are building the {activeTab} module.</p>
