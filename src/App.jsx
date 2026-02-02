@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import DashboardHome from './components/DashboardHome';
+import CropAdvisor from './components/CropAdvisor'; // <--- 1. IMPORTED HERE
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -13,25 +14,21 @@ export default function App() {
   // --- 1. ENABLE BROWSER BACK BUTTON (Hash Routing) ---
   useEffect(() => {
     const handleHashChange = () => {
-      // Read the URL hash (e.g., #crops) and update the tab
       const hash = window.location.hash.replace('#', '');
       if (hash) setActiveTab(hash);
       else setActiveTab('dashboard');
     };
 
-    // Listen for browser Back/Forward clicks
     window.addEventListener('hashchange', handleHashChange);
-    
-    // Check URL on first load (so refreshing on #crops works)
     handleHashChange();
 
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Custom Navigation Function: Updates UI + URL
+  // Custom Navigation Function
   const navigate = (tabId) => {
     setActiveTab(tabId);
-    window.location.hash = tabId; // This pushes to browser history
+    window.location.hash = tabId;
   };
 
   // --- 2. HANDLE TIME & GREETING ---
@@ -74,7 +71,6 @@ export default function App() {
   return (
     <div className="flex min-h-screen text-white selection:bg-green-500/30">
       
-      {/* Pass 'navigate' instead of 'setActiveTab' so clicks update the URL */}
       <Sidebar activeTab={activeTab} setActiveTab={navigate} />
 
       <main className="flex-1 w-full md:ml-[290px] p-4 md:p-8 pb-24 md:pb-8 transition-all duration-300">
@@ -104,7 +100,11 @@ export default function App() {
         {/* --- VIEWS --- */}
         {activeTab === 'dashboard' && <DashboardHome setActiveTab={navigate} location={location} />}
         
-        {activeTab !== 'dashboard' && (
+        {/* --- 2. RENDER CROP ADVISOR HERE --- */}
+        {activeTab === 'crops' && <CropAdvisor setActiveTab={navigate} />}
+        
+        {/* Placeholder for other tabs (Excluding crops now) */}
+        {activeTab !== 'dashboard' && activeTab !== 'crops' && (
           <div className="glass-panel p-10 rounded-3xl text-center min-h-[400px] flex flex-col items-center justify-center">
             <h2 className="text-2xl font-bold text-white/50">Feature Coming Soon</h2>
             <p className="text-green-200/40 mt-2 mb-6">We are building the {activeTab} module.</p>
