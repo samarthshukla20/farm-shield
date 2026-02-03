@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Cloud, Droplets, Wind, Thermometer, MapPin, ArrowLeft, Search, Navigation, ArrowRight, Sun, CloudRain, CloudLightning, Snowflake } from 'lucide-react';
+import { Cloud, Droplets, Wind, Thermometer, MapPin, ArrowLeft, Search, Navigation, ArrowRight, Sun, CloudRain, CloudLightning, Snowflake, AlertTriangle } from 'lucide-react';
+import { API_BASE_URL } from '../config'; // Ensure this matches your config file path
 
 export default function WeatherStation({ setActiveTab }) {
   const [loading, setLoading] = useState(false);
@@ -10,6 +11,7 @@ export default function WeatherStation({ setActiveTab }) {
 
   // Helper: Map WMO codes to Icons/Text
   const getWeatherDetails = (code) => {
+    if (code === undefined || code === null) return { label: "Unknown", icon: Cloud, color: "text-gray-400" };
     if (code === 0) return { label: "Clear Sky", icon: Sun, color: "text-yellow-400" };
     if (code >= 1 && code <= 3) return { label: "Partly Cloudy", icon: Cloud, color: "text-gray-300" };
     if (code >= 45 && code <= 48) return { label: "Foggy", icon: Cloud, color: "text-gray-400" };
@@ -23,16 +25,25 @@ export default function WeatherStation({ setActiveTab }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/weather", {
+      // Use API_BASE_URL from config.js
+      const res = await fetch(`${API_BASE_URL}/api/weather`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ latitude: lat, longitude: lon })
       });
+      
       const data = await res.json();
+      
       if (data.error) throw new Error(data.error);
+      
+      // Safety Check: Ensure 'current' and 'forecast' exist
+      if (!data.temperature && data.temperature !== 0) throw new Error("Incomplete weather data received");
+      
       setWeather({ ...data, locationName });
+
     } catch (err) {
-      setError("Failed to fetch weather data.");
+      console.error("Weather Error:", err);
+      setError(err.message || "Failed to fetch weather data.");
     } finally {
       setLoading(false);
     }
@@ -43,27 +54,33 @@ export default function WeatherStation({ setActiveTab }) {
       setLoading(true);
       navigator.geolocation.getCurrentPosition(
         (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude, "Current Location"),
-        () => { setError("GPS Denied"); setLoading(false); }
+        (err) => { 
+            console.error(err);
+            setError("GPS Permission Denied. Please use Manual Search."); 
+            setLoading(false); 
+        }
       );
-    } else setError("GPS not supported");
+    } else {
+      setError("GPS not supported on this device.");
+    }
   };
 
   const handleManual = async (e) => {
     e.preventDefault();
     if (!cityQuery) return;
     setLoading(true);
+    setError(null);
     try {
-      // Geocode the city name first
       const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${cityQuery}`);
       const geoData = await geoRes.json();
       if (geoData.length > 0) {
         fetchWeather(geoData[0].lat, geoData[0].lon, geoData[0].display_name.split(',')[0]);
       } else {
-        setError("City not found");
+        setError("City not found. Please try a different spelling.");
         setLoading(false);
       }
     } catch (err) {
-      setError("Network Error");
+      setError("Network Error: Could not verify city name.");
       setLoading(false);
     }
   };
@@ -113,12 +130,21 @@ export default function WeatherStation({ setActiveTab }) {
         </form>
       )}
 
-      {error && <div className="p-4 bg-red-500/20 text-red-200 rounded-xl mb-6">{error}</div>}
+      {/* ERROR MESSAGE CARD */}
+      {error && (
+        <div className="p-4 bg-red-500/20 border border-red-500/30 text-red-200 rounded-xl mb-6 flex items-center gap-3">
+            <AlertTriangle className="shrink-0" />
+            <div>
+                <p className="font-bold">Error Loading Weather</p>
+                <p className="text-sm opacity-80">{error}</p>
+            </div>
+        </div>
+      )}
 
       {loading && (
         <div className="h-64 flex flex-col items-center justify-center text-white/50">
             <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            Loading Satellite Data...
+            Connecting to Satellite...
         </div>
       )}
 
@@ -126,8 +152,8 @@ export default function WeatherStation({ setActiveTab }) {
         <div className="space-y-6">
             
             {/* 1. Main Weather Card */}
-            <div className="glass-panel p-8 rounded-3xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+            <div className="glass-panel p-8 rounded-3xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 border border-white/10">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                 
                 <div className="relative z-10 text-center md:text-left">
                     <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
@@ -142,7 +168,7 @@ export default function WeatherStation({ setActiveTab }) {
                     
                     {/* AI Insight Badge */}
                     <div className="inline-block px-4 py-2 bg-white/10 rounded-lg border border-white/10 backdrop-blur-md mt-2">
-                        <p className="text-green-300 text-sm font-medium">🤖 AI Tip: {weather.ai_advice}</p>
+                        <p className="text-green-300 text-sm font-medium">🤖 AI Tip: {weather.ai_advice || "Conditions are stable."}</p>
                     </div>
                 </div>
 
@@ -161,29 +187,40 @@ export default function WeatherStation({ setActiveTab }) {
                 </div>
             </div>
 
-            {/* 2. 7-Day Forecast */}
+            {/* 2. 7-Day Forecast (With Crash Protection) */}
             <h3 className="text-xl font-bold text-white pl-2">7-Day Forecast</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                {weather.forecast.time.map((date, i) => {
-                    if (i > 6) return null; // Limit to 7 days
-                    const code = weather.forecast.weather_code[i];
-                    const max = weather.forecast.temperature_2m_max[i];
-                    const min = weather.forecast.temperature_2m_min[i];
-                    const details = getWeatherDetails(code);
-                    const Icon = details.icon;
-                    
-                    return (
-                        <div key={i} className="glass-panel p-4 rounded-2xl flex flex-col items-center text-center border border-white/5 hover:bg-white/10 transition">
-                            <span className="text-xs text-white/50 mb-2">
-                                {new Date(date).toLocaleDateString('en-GB', { weekday: 'short' })}
-                            </span>
-                            <Icon className={`mb-3 ${details.color}`} size={24} />
-                            <span className="text-lg font-bold text-white">{Math.round(max)}°</span>
-                            <span className="text-xs text-white/40">{Math.round(min)}°</span>
-                        </div>
-                    );
-                })}
-            </div>
+            
+            {/* Check if forecast data exists before trying to map */}
+            {weather.forecast && weather.forecast.time ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                    {weather.forecast.time.map((date, i) => {
+                        if (i > 6) return null; // Limit to 7 days
+                        
+                        // Safely access array items
+                        const code = weather.forecast.weather_code?.[i] ?? 0;
+                        const max = weather.forecast.temperature_2m_max?.[i] ?? 0;
+                        const min = weather.forecast.temperature_2m_min?.[i] ?? 0;
+                        
+                        const details = getWeatherDetails(code);
+                        const Icon = details.icon;
+                        
+                        return (
+                            <div key={i} className="glass-panel p-4 rounded-2xl flex flex-col items-center text-center border border-white/5 hover:bg-white/10 transition">
+                                <span className="text-xs text-white/50 mb-2">
+                                    {new Date(date).toLocaleDateString('en-GB', { weekday: 'short' })}
+                                </span>
+                                <Icon className={`mb-3 ${details.color}`} size={24} />
+                                <span className="text-lg font-bold text-white">{Math.round(max)}°</span>
+                                <span className="text-xs text-white/40">{Math.round(min)}°</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <div className="text-white/50 text-center py-10 bg-white/5 rounded-2xl">
+                    Forecast data currently unavailable.
+                </div>
+            )}
         </div>
       )}
     </div>

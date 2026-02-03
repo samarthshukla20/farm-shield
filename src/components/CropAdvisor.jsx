@@ -1,34 +1,32 @@
 import { useState } from 'react';
-// Added ArrowRight to this import list ↓
 import { MapPin, Sprout, Loader2, ArrowLeft, Droplets, Wind, AlertTriangle, Search, Navigation, ArrowRight } from 'lucide-react';
+import { API_BASE_URL } from '../config'; // <--- IMPORT THIS
 
 export default function CropAdvisor({ setActiveTab }) {
+  // ... (keep existing state variables) ...
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  
-  // New State for Manual Search
-  const [searchMode, setSearchMode] = useState('gps'); // 'gps' or 'manual'
+  const [searchMode, setSearchMode] = useState('gps');
   const [manualLocation, setManualLocation] = useState('');
 
-  // 1. Function to call API (Reusable for both GPS and Manual)
   const fetchRecommendations = async (payload) => {
     setLoading(true);
     setError(null);
     setResult(null);
     
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/recommend", {
+      // USE THE CONFIG VARIABLE HERE:
+      const res = await fetch(`${API_BASE_URL}/api/recommend`, { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
       const data = await res.json();
-
+      // ... (rest of the function stays the same) ...
       if (data.error) setError(data.error);
       else if (!data.crops) setError("Received incomplete data. Try again.");
       else setResult(data);
-
     } catch (err) {
         setError("Could not connect to the Brain. Is backend running?");
     } finally {
@@ -36,7 +34,8 @@ export default function CropAdvisor({ setActiveTab }) {
     }
   };
 
-  // 2. Handle GPS Click
+  // ... (keep the rest of the component exactly the same) ...
+  // (handleGpsSearch, handleManualSearch, and the return JSX)
   const handleGpsSearch = () => {
     if ("geolocation" in navigator) {
       setLoading(true); 
@@ -55,7 +54,6 @@ export default function CropAdvisor({ setActiveTab }) {
     }
   };
 
-  // 3. Handle Manual Search Click
   const handleManualSearch = (e) => {
     e.preventDefault(); 
     if (!manualLocation.trim()) return;
@@ -64,8 +62,8 @@ export default function CropAdvisor({ setActiveTab }) {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-      
-      {/* Header */}
+      {/* ... (The UI code remains unchanged) ... */}
+       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <button 
             onClick={() => setActiveTab('dashboard')} 

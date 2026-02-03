@@ -1,5 +1,4 @@
 import { Sprout, CloudLightning, ScanLine, Bot, MapPin, ArrowRight, Sun } from 'lucide-react';
-
 export default function DashboardHome({ setActiveTab, location }) {
   
   const features = [

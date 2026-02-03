@@ -1,5 +1,4 @@
 import { LayoutGrid, Sprout, Bot, Siren } from 'lucide-react';
-
 export default function Sidebar({ activeTab, setActiveTab }) {
   
   const menuItems = [
