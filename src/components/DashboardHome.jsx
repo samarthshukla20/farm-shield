@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Sprout, CloudLightning, ScanLine, Bot, MapPin, ArrowRight, Sun, Cloud, CloudRain, Snowflake } from 'lucide-react';
-import { API_BASE_URL } from '../config'; // Make sure this path is correct
+import { Sprout, CloudLightning, ScanLine, Bot, MapPin, ArrowRight, Sun, Cloud, CloudRain, Snowflake, Loader2 } from 'lucide-react'; // Added Loader2
+import { API_BASE_URL } from '../config'; 
 
 export default function DashboardHome({ setActiveTab, location }) {
-  // State to hold the current weather code (Default = 0: Clear/Sun)
+  // State to hold weather code (Default = 0: Sun)
   const [weatherCode, setWeatherCode] = useState(0);
+  // NEW: State to track if we are still fetching data
+  const [loading, setLoading] = useState(true);
 
-  // 1. Helper Function: Maps Code -> Icon & Color (Same as WeatherStation)
+  // 1. Helper Function: Maps Code -> Icon & Color
   const getWeatherDetails = (code) => {
     if (code === undefined || code === null) return { icon: Sun, color: "text-yellow-400" };
     if (code === 0) return { icon: Sun, color: "text-yellow-400" };
@@ -18,31 +20,43 @@ export default function DashboardHome({ setActiveTab, location }) {
     return { icon: Cloud, color: "text-gray-300" };
   };
 
-  // 2. Fetch Weather on Mount (Silently)
+  // 2. Fetch Weather on Mount
   useEffect(() => {
+    setLoading(true); // Start the spinner
+
     if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          const res = await fetch(`${API_BASE_URL}/api/weather`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ latitude, longitude })
-          });
-          const data = await res.json();
-          // Only update if we got a valid code
-          if (data.weather_code !== undefined) {
-            setWeatherCode(data.weather_code);
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+            const res = await fetch(`${API_BASE_URL}/api/weather`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ latitude, longitude })
+            });
+            const data = await res.json();
+            
+            if (data.weather_code !== undefined) {
+              setWeatherCode(data.weather_code);
+            }
+          } catch (err) {
+            console.error("Dashboard weather sync failed:", err);
+            // On error, we just keep the default (Sun)
+          } finally {
+            setLoading(false); // Stop spinner regardless of success/fail
           }
-        } catch (err) {
-          console.error("Dashboard weather sync failed:", err);
-          // We silently fail and keep the default Sun icon
+        },
+        (error) => {
+          console.error("Location access denied:", error);
+          setLoading(false); // Stop spinner if user denies location
         }
-      });
+      );
+    } else {
+      setLoading(false);
     }
   }, []);
 
-  // 3. Get the correct icon Component and Color
+  // 3. Get the correct icon Component
   const { icon: WeatherIcon, color: iconColor } = getWeatherDetails(weatherCode);
 
   const features = [
@@ -53,6 +67,14 @@ export default function DashboardHome({ setActiveTab, location }) {
       icon: Sprout,
       color: "text-green-400",
       bg: "bg-green-400/10"
+    },
+    {
+      id: 'weather',
+      title: "Weather Station",
+      desc: "Live forecasts and storm alerts for your village.",
+      icon: CloudLightning,
+      color: "text-yellow-400",
+      bg: "bg-yellow-400/10"
     },
     {
       id: 'pest',
@@ -69,14 +91,6 @@ export default function DashboardHome({ setActiveTab, location }) {
       icon: Bot,
       color: "text-blue-400",
       bg: "bg-blue-400/10"
-    },
-    {
-      id: 'weather',
-      title: "Weather Station",
-      desc: "Live forecasts and storm alerts for your village.",
-      icon: CloudLightning,
-      color: "text-yellow-400",
-      bg: "bg-yellow-400/10"
     }
   ];
 
@@ -86,7 +100,7 @@ export default function DashboardHome({ setActiveTab, location }) {
       {/* Hero Section */}
       <div className="glass-panel p-6 md:p-8 rounded-3xl relative overflow-hidden group flex justify-between items-center">
         
-        {/* Light Effect - Top Center */}
+        {/* Light Effect */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-green-500/20 rounded-full blur-3xl -mt-16 group-hover:bg-green-500/30 transition duration-700"></div>
         
         <div className="relative z-10 flex-1 pr-4">
@@ -108,12 +122,19 @@ export default function DashboardHome({ setActiveTab, location }) {
           </div>
         </div>
 
-        {/* Dynamic Weather Icon */}
+        {/* Dynamic Weather Icon with Loading State */}
         <div className="relative z-10 ml-auto shrink-0">
-          <WeatherIcon 
-            className={`w-24 h-24 md:w-40 md:h-40 ${iconColor} drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]`} 
-            strokeWidth={1.5}
-          />
+          {loading ? (
+            <Loader2 
+              className="w-24 h-24 md:w-40 md:h-40 text-white/30 animate-spin" 
+              strokeWidth={1.5}
+            />
+          ) : (
+            <WeatherIcon 
+              className={`w-24 h-24 md:w-40 md:h-40 ${iconColor} drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]`} 
+              strokeWidth={1.5}
+            />
+          )}
         </div>
       </div>
 
