@@ -1,6 +1,50 @@
-import { Sprout, CloudLightning, ScanLine, Bot, MapPin, ArrowRight, Sun } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Sprout, CloudLightning, ScanLine, Bot, MapPin, ArrowRight, Sun, Cloud, CloudRain, Snowflake } from 'lucide-react';
+import { API_BASE_URL } from '../config'; // Make sure this path is correct
+
 export default function DashboardHome({ setActiveTab, location }) {
-  
+  // State to hold the current weather code (Default = 0: Clear/Sun)
+  const [weatherCode, setWeatherCode] = useState(0);
+
+  // 1. Helper Function: Maps Code -> Icon & Color (Same as WeatherStation)
+  const getWeatherDetails = (code) => {
+    if (code === undefined || code === null) return { icon: Sun, color: "text-yellow-400" };
+    if (code === 0) return { icon: Sun, color: "text-yellow-400" };
+    if (code >= 1 && code <= 3) return { icon: Cloud, color: "text-gray-300" };
+    if (code >= 45 && code <= 48) return { icon: Cloud, color: "text-gray-400" };
+    if (code >= 51 && code <= 67) return { icon: CloudRain, color: "text-blue-400" };
+    if (code >= 71 && code <= 77) return { icon: Snowflake, color: "text-cyan-200" };
+    if (code >= 95) return { icon: CloudLightning, color: "text-purple-400" };
+    return { icon: Cloud, color: "text-gray-300" };
+  };
+
+  // 2. Fetch Weather on Mount (Silently)
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(`${API_BASE_URL}/api/weather`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ latitude, longitude })
+          });
+          const data = await res.json();
+          // Only update if we got a valid code
+          if (data.weather_code !== undefined) {
+            setWeatherCode(data.weather_code);
+          }
+        } catch (err) {
+          console.error("Dashboard weather sync failed:", err);
+          // We silently fail and keep the default Sun icon
+        }
+      });
+    }
+  }, []);
+
+  // 3. Get the correct icon Component and Color
+  const { icon: WeatherIcon, color: iconColor } = getWeatherDetails(weatherCode);
+
   const features = [
     {
       id: 'crops',
@@ -9,14 +53,6 @@ export default function DashboardHome({ setActiveTab, location }) {
       icon: Sprout,
       color: "text-green-400",
       bg: "bg-green-400/10"
-    },
-    {
-      id: 'weather',
-      title: "Weather Station",
-      desc: "Live forecasts and storm alerts for your village.",
-      icon: CloudLightning,
-      color: "text-yellow-400",
-      bg: "bg-yellow-400/10"
     },
     {
       id: 'pest',
@@ -33,6 +69,14 @@ export default function DashboardHome({ setActiveTab, location }) {
       icon: Bot,
       color: "text-blue-400",
       bg: "bg-blue-400/10"
+    },
+    {
+      id: 'weather',
+      title: "Weather Station",
+      desc: "Live forecasts and storm alerts for your village.",
+      icon: CloudLightning,
+      color: "text-yellow-400",
+      bg: "bg-yellow-400/10"
     }
   ];
 
@@ -49,7 +93,7 @@ export default function DashboardHome({ setActiveTab, location }) {
           <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white">Farm Overview</h2>
           <p className="text-green-100/70 max-w-xl text-sm md:text-base leading-relaxed">
             Everything looks good at <span className="text-white font-semibold">{location}</span>. 
-            Soil moisture is optimal. No storms predicted today.
+            System is monitoring conditions. <span className="text-white font-semibold"> Get more details at Weather Station</span>.
           </p>
           
           <div className="flex flex-wrap gap-3 mt-6">
@@ -64,11 +108,10 @@ export default function DashboardHome({ setActiveTab, location }) {
           </div>
         </div>
 
-        {/* Sun Icon - RESPONSIVE SIZE */}
-        {/* w-24 (96px) on Mobile, w-40 (160px) on Desktop */}
+        {/* Dynamic Weather Icon */}
         <div className="relative z-10 ml-auto shrink-0">
-          <Sun 
-            className="w-24 h-24 md:w-40 md:h-40 text-yellow-400/80 drop-shadow-[0_0_15px_rgba(250,204,21,0.3)]" 
+          <WeatherIcon 
+            className={`w-24 h-24 md:w-40 md:h-40 ${iconColor} drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]`} 
             strokeWidth={1.5}
           />
         </div>
