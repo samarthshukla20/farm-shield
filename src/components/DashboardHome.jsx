@@ -1,13 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Sprout, CloudLightning, ScanLine, Bot, MapPin, ArrowRight, Sun, Cloud, CloudRain, Snowflake, Loader2 } from 'lucide-react'; // Added Loader2
-import { API_BASE_URL } from '../config'; 
+import { Sprout, CloudLightning, ScanLine, Bot, MapPin, ArrowRight, Sun, Cloud, CloudRain, Snowflake, Loader2 } from 'lucide-react';
 
-export default function DashboardHome({ setActiveTab, location }) {
-  // State to hold weather code (Default = 0: Sun)
-  const [weatherCode, setWeatherCode] = useState(0);
-  // NEW: State to track if we are still fetching data
-  const [loading, setLoading] = useState(true);
-
+// Now accepts weatherCode and weatherLoading as props
+export default function DashboardHome({ setActiveTab, location, weatherCode, weatherLoading }) {
+  
   // 1. Helper Function: Maps Code -> Icon & Color
   const getWeatherDetails = (code) => {
     if (code === undefined || code === null) return { icon: Sun, color: "text-yellow-400" };
@@ -20,43 +15,7 @@ export default function DashboardHome({ setActiveTab, location }) {
     return { icon: Cloud, color: "text-gray-300" };
   };
 
-  // 2. Fetch Weather on Mount
-  useEffect(() => {
-    setLoading(true); // Start the spinner
-
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const { latitude, longitude } = position.coords;
-            const res = await fetch(`${API_BASE_URL}/api/weather`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ latitude, longitude })
-            });
-            const data = await res.json();
-            
-            if (data.weather_code !== undefined) {
-              setWeatherCode(data.weather_code);
-            }
-          } catch (err) {
-            console.error("Dashboard weather sync failed:", err);
-            // On error, we just keep the default (Sun)
-          } finally {
-            setLoading(false); // Stop spinner regardless of success/fail
-          }
-        },
-        (error) => {
-          console.error("Location access denied:", error);
-          setLoading(false); // Stop spinner if user denies location
-        }
-      );
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  // 3. Get the correct icon Component
+  // 2. Get the correct icon Component
   const { icon: WeatherIcon, color: iconColor } = getWeatherDetails(weatherCode);
 
   const features = [
@@ -107,7 +66,7 @@ export default function DashboardHome({ setActiveTab, location }) {
           <h2 className="text-2xl md:text-3xl font-bold mb-2 text-white">Farm Overview</h2>
           <p className="text-green-100/70 max-w-xl text-sm md:text-base leading-relaxed">
             Everything looks good at <span className="text-white font-semibold">{location}</span>. 
-            System is monitoring conditions. <span className="text-white font-semibold"> Get more details at Weather Station</span>.
+            System is monitoring conditions. <span className="text-white font-semibold">Get more details at Weather Station.</span>. 
           </p>
           
           <div className="flex flex-wrap gap-3 mt-6">
@@ -124,7 +83,7 @@ export default function DashboardHome({ setActiveTab, location }) {
 
         {/* Dynamic Weather Icon with Loading State */}
         <div className="relative z-10 ml-auto shrink-0">
-          {loading ? (
+          {weatherLoading ? (
             <Loader2 
               className="w-24 h-24 md:w-40 md:h-40 text-white/30 animate-spin" 
               strokeWidth={1.5}
