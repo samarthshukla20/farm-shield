@@ -3,34 +3,33 @@ import Sidebar from './components/Sidebar';
 import DashboardHome from './components/DashboardHome';
 import CropAdvisor from './components/CropAdvisor';
 import WeatherStation from './components/WeatherStation';
-import { API_BASE_URL } from './config';
+import PestScanner from './components/PestScanner';
+import SahayakBot from './components/SahayakBot';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   
-  // --- STATE FOR LIVE DATA (Restored) ---
+  // --- STATE FOR LIVE DATA ---
   const [currentDate, setCurrentDate] = useState('');
   const [greeting, setGreeting] = useState('Welcome');
   const [location, setLocation] = useState('Detecting Location...');
 
-  // --- NEW: Global Weather State (The Fix for Reloading) ---
-  const [globalWeather, setGlobalWeather] = useState({
-    code: 0,       // Default to Sun
-    loading: true, // Start loading
-    fetched: false // Track if we already have data
+  // --- NEW: GLOBAL WEATHER STATE (Persists across tabs) ---
+  const [weatherState, setWeatherState] = useState({
+    data: null,      // Stores the actual weather data
+    loading: false,  // Stores loading status
+    error: null      // Stores any errors
   });
 
-  // --- 1. ENABLE BROWSER BACK BUTTON (Hash Routing) ---
+  // --- 1. ENABLE BROWSER BACK BUTTON ---
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
       if (hash) setActiveTab(hash);
       else setActiveTab('dashboard');
     };
-
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange();
-
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
@@ -55,13 +54,11 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // --- 3. HANDLE LOCATION & FETCH WEATHER ONCE ---
+  // --- 3. HANDLE LOCATION ---
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords;
-        
-        // A. Get Address Name (Nominatim)
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
           const data = await res.json();
@@ -72,46 +69,15 @@ export default function App() {
         } catch (error) {
           setLocation("Location Unavailable");
         }
-
-        // B. Fetch Weather Once (New Logic)
-        if (!globalWeather.fetched) {
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/weather`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ latitude, longitude })
-                });
-                const data = await res.json();
-                
-                if (data.weather_code !== undefined) {
-                setGlobalWeather({ 
-                    code: data.weather_code, 
-                    loading: false, 
-                    fetched: true 
-                });
-                }
-            } catch (err) {
-                console.error("Global weather fetch failed:", err);
-                setGlobalWeather(prev => ({ ...prev, loading: false }));
-            }
-        }
-
-      }, () => {
-          setLocation("Permission Denied");
-          setGlobalWeather(prev => ({ ...prev, loading: false }));
-      });
+      }, () => setLocation("Permission Denied"));
     } else {
       setLocation("GPS Not Supported");
-      setGlobalWeather(prev => ({ ...prev, loading: false }));
     }
-  }, [globalWeather.fetched]);
+  }, []);
 
   return (
     <div className="flex min-h-screen text-white selection:bg-green-500/30">
       
-      {/* Restored Original Sidebar Layout 
-          (This fixes the UI overlap issue)
-      */}
       <Sidebar activeTab={activeTab} setActiveTab={navigate} />
 
       <main className="flex-1 w-full md:ml-[290px] p-4 md:p-8 pb-24 md:pb-8 transition-all duration-300">
@@ -139,29 +105,28 @@ export default function App() {
         </header>
 
         {/* --- VIEWS --- */}
-        {activeTab === 'dashboard' && (
-            <DashboardHome 
-                setActiveTab={navigate} 
-                location={location}
-                // PASSING THE GLOBAL WEATHER STATE ↓
-                weatherCode={globalWeather.code}
-                weatherLoading={globalWeather.loading}
-            />
-        )}
+        {activeTab === 'dashboard' && <DashboardHome setActiveTab={navigate} location={location} />}
         
         {activeTab === 'crops' && <CropAdvisor setActiveTab={navigate} />}
 
-        {activeTab === 'weather' && <WeatherStation setActiveTab={navigate} />}
+        {activeTab === 'pest' && <PestScanner setActiveTab={navigate} />}
+
+        {activeTab === 'bot' && <SahayakBot setActiveTab={navigate} />}
+
+        {/* --- PASS GLOBAL STATE TO WEATHER STATION --- */}
+        {activeTab === 'weather' && (
+          <WeatherStation 
+            setActiveTab={navigate} 
+            weatherState={weatherState} 
+            setWeatherState={setWeatherState} 
+          />
+        )}
         
-        {/* Placeholder for other tabs */}
-        {activeTab !== 'dashboard' && activeTab !== 'crops' && activeTab !== 'weather' && (
+        {activeTab !== 'dashboard' && activeTab !== 'crops' && activeTab!=='pest' && activeTab!=='bot' && activeTab !== 'weather' && (
           <div className="glass-panel p-10 rounded-3xl text-center min-h-[400px] flex flex-col items-center justify-center">
             <h2 className="text-2xl font-bold text-white/50">Feature Coming Soon</h2>
             <p className="text-green-200/40 mt-2 mb-6">We are building the {activeTab} module.</p>
-            <button 
-              onClick={() => navigate('dashboard')} 
-              className="px-6 py-2 bg-white/10 rounded-xl hover:bg-white/20 transition text-sm font-medium"
-            >
+            <button onClick={() => navigate('dashboard')} className="px-6 py-2 bg-white/10 rounded-xl hover:bg-white/20 transition text-sm font-medium">
               Go Back Home
             </button>
           </div>
