@@ -28,14 +28,6 @@ export default function DashboardHome({ setActiveTab, location, weatherCode, wea
       bg: "bg-green-400/10"
     },
     {
-      id: 'weather',
-      title: "Weather Station",
-      desc: "Live forecasts and storm alerts for your village.",
-      icon: CloudLightning,
-      color: "text-yellow-400",
-      bg: "bg-yellow-400/10"
-    },
-    {
       id: 'pest',
       title: "Dr. Crop (Pest Scan)",
       desc: "Instant disease diagnosis using AI vision.",
@@ -50,6 +42,14 @@ export default function DashboardHome({ setActiveTab, location, weatherCode, wea
       icon: Bot,
       color: "text-blue-400",
       bg: "bg-blue-400/10"
+    },
+    {
+      id: 'weather',
+      title: "Weather Station",
+      desc: "Live forecasts and storm alerts for your village.",
+      icon: CloudLightning,
+      color: "text-yellow-400",
+      bg: "bg-yellow-400/10"
     }
   ];
 

@@ -1,0 +1,73 @@
+{
+  "app_title": "FarmShield",
+  "greeting": "Welcome",
+  "header": {
+    "detecting": "Detecting Location...",
+    "language": "English"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "crops": "Crop Advisor",
+    "weather": "Weather Station",
+    "pest": "Dr. Crop (Pest)",
+    "chat": "Sahayak AI",
+    "mandi": "Mandi Rates"
+  },
+  "dashboard": {
+    "weather_card": {
+      "title": "Weather Update",
+      "temp_label": "Temperature",
+      "humidity": "Humidity",
+      "wind": "Wind",
+      "loading": "Loading Satellite Data...",
+      "tap_more": "See Full Forecast"
+    },
+    "pest_card": {
+      "title": "Pest Scanner",
+      "desc": "Take a photo of your crop to detect diseases.",
+      "button": "Scan Now"
+    },
+    "mandi_card": {
+      "title": "Mandi Rates",
+      "desc": "Check the latest market prices for your crops.",
+      "button": "Check Prices"
+    },
+    "chat_card": {
+      "title": "Sahayak AI",
+      "desc": "Ask any question about farming or schemes.",
+      "button": "Start Chat"
+    },
+    "crop_card": {
+      "title": "My Crops",
+      "desc": "Manage your crops from sowing to harvest.",
+      "button": "Manage Crops"
+    }
+  },
+  "pest": {
+    "title": "Dr. Crop",
+    "subtitle": "AI Consultant",
+    "scan_btn": "Photo Scan",
+    "voice_btn": "Voice Help",
+    "take_photo": "Take Photo",
+    "gallery": "Gallery",
+    "camera": "Camera",
+    "retake": "Retake",
+    "diagnose": "Diagnose",
+    "listening": "Listening...",
+    "tap_speak": "Tap to Speak"
+  },
+  "chat": {
+    "title": "Sahayak AI",
+    "subtitle": "Your Farming Companion",
+    "placeholder": "Ask your problem...",
+    "thinking": "Thinking..."
+  },
+  "mandi": {
+    "title": "Mandi Rates",
+    "subtitle": "Live Market Rates",
+    "search": "Search crop...",
+    "min": "Min Price",
+    "avg": "Avg Price",
+    "max": "Max Price"
+  }
+}

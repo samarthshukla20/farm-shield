@@ -1,10 +1,26 @@
-import { LayoutGrid, Sprout, Bot, Siren } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { 
+  LayoutGrid, 
+  Sprout, 
+  CloudRain, 
+  Bug, 
+  MessageCircle, 
+  IndianRupee, 
+  Siren 
+} from 'lucide-react';
+
 export default function Sidebar({ activeTab, setActiveTab }) {
-  
+  const { t } = useTranslation();
+
+  // IDs here must match the keys in your en.json/hi.json
+  // and the checks in App.jsx (e.g. activeTab === 'weather')
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
-    { id: 'crops', label: 'My Crops', icon: Sprout },
-    { id: 'bot', label: 'Sahayak Bot', icon: Bot },
+    { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutGrid },
+    { id: 'crops', label: t('sidebar.crops'), icon: Sprout },
+    { id: 'weather', label: t('sidebar.weather'), icon: CloudRain },
+    { id: 'pest', label: t('sidebar.pest'), icon: Bug },
+    { id: 'bot', label: t('sidebar.chat'), icon: MessageCircle }, // Maps 'bot' tab to 'Sahayak AI' label
+    { id: 'mandi', label: t('sidebar.mandi'), icon: IndianRupee },
   ];
 
   return (
@@ -18,7 +34,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
             <span className="text-2xl">🛡️</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white tracking-wide">FarmShield</h1>
+            <h1 className="text-xl font-bold text-white tracking-wide">{t('app_title')}</h1>
             <p className="text-xs text-green-200 font-medium">AI Guard</p>
           </div>
         </div>
@@ -58,7 +74,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
 
       {/* --- MOBILE BOTTOM BAR (Visible only on Mobile) --- */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#022c22]/90 backdrop-blur-xl border-t border-white/10 z-50 pb-safe">
-        <div className="flex justify-around items-center p-2">
+        <div className="flex justify-between items-center px-4 py-2 overflow-x-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -66,20 +82,15 @@ export default function Sidebar({ activeTab, setActiveTab }) {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center gap-1 p-3 rounded-2xl transition-all ${
+                className={`flex flex-col items-center gap-1 p-2 min-w-[60px] rounded-2xl transition-all ${
                   isActive ? 'text-green-400 bg-white/10' : 'text-green-100/60'
                 }`}
               >
-                <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                <span className="text-[10px] font-medium whitespace-nowrap">{item.label}</span>
               </button>
             );
           })}
-          {/* Mobile SOS (Small) */}
-          <button className="flex flex-col items-center gap-1 p-3 text-red-500 animate-pulse">
-            <Siren size={24} />
-            <span className="text-[10px] font-bold">SOS</span>
-          </button>
         </div>
       </nav>
     </>

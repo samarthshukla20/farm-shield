@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, ArrowLeft, Loader2, Sparkles, Mic, Volume2, StopCircle, Square } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { useTranslation } from 'react-i18next'; // 1. Import Translation Hook
 
 export default function SahayakBot({ setActiveTab }) {
+  const { t, i18n } = useTranslation(); // 2. Initialize Hook
+
+  // Initial message (You can also make this dynamic if you want, but simple is fine)
   const [messages, setMessages] = useState([
-    { role: 'bot', text: "Namaste! I am Sahayak. Ask me anything about farming." }
+    { role: 'bot', text: i18n.language === 'hi' ? "नमस्ते! मैं सहायक हूँ। मुझसे खेती के बारे में कुछ भी पूछें।" : "Namaste! I am Sahayak. Ask me anything about farming." }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -58,10 +62,13 @@ export default function SahayakBot({ setActiveTab }) {
     
     // Add a temporary "Listening..." bubble
     const tempId = Date.now();
-    setMessages(prev => [...prev, { role: 'user', text: "🎤 (Processing Audio...)", id: tempId }]);
+    setMessages(prev => [...prev, { role: 'user', text: "🎤 ...", id: tempId }]);
 
     const formData = new FormData();
     formData.append("file", audioBlob, "voice.mp3");
+    // Note: The voice endpoint usually auto-detects language, 
+    // but sending the language code helps if your backend supports it.
+    formData.append("language", i18n.language); 
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/chat-voice`, {
@@ -73,7 +80,7 @@ export default function SahayakBot({ setActiveTab }) {
       // Replace temp message with actual response
       setMessages(prev => [
         ...prev.filter(m => m.id !== tempId),
-        { role: 'user', text: "🎤 Voice Query Sent" },
+        { role: 'user', text: "🎤 " + (i18n.language === 'hi' ? "आवाज़ भेजी गई" : "Voice Query Sent") },
         { role: 'bot', text: data.reply }
       ]);
     } catch (err) {
@@ -92,7 +99,10 @@ export default function SahayakBot({ setActiveTab }) {
         return;
       }
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = /[\u0900-\u097F]/.test(text) ? 'hi-IN' : 'en-IN'; 
+      // Auto-detect Hindi characters or use current app language
+      const isHindi = /[\u0900-\u097F]/.test(text);
+      utterance.lang = isHindi ? 'hi-IN' : 'en-IN'; 
+      
       utterance.onstart = () => setSpeakingMsgId(index);
       utterance.onend = () => setSpeakingMsgId(null);
       window.speechSynthesis.speak(utterance);
@@ -115,7 +125,11 @@ export default function SahayakBot({ setActiveTab }) {
       const res = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg.text })
+        // 3. SEND LANGUAGE TO BACKEND
+        body: JSON.stringify({ 
+            message: userMsg.text,
+            language: i18n.language // 'en' or 'hi'
+        })
       });
       const data = await res.json();
       setMessages(prev => [...prev, { role: 'bot', text: data.reply }]);
@@ -138,9 +152,9 @@ export default function SahayakBot({ setActiveTab }) {
         </button>
         <div>
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                Sahayak AI <Sparkles size={18} className="text-yellow-400" />
+                {t('chat.title')} <Sparkles size={18} className="text-yellow-400" />
             </h2>
-            <p className="text-green-200/60 text-sm">Universal Voice Chat</p>
+            <p className="text-green-200/60 text-sm">{t('chat.subtitle')}</p>
         </div>
       </div>
 
@@ -162,7 +176,7 @@ export default function SahayakBot({ setActiveTab }) {
                     </div>
                 </div>
             ))}
-            {loading && <div className="flex gap-2 items-center text-green-400 text-sm ml-12"><Loader2 size={16} className="animate-spin" /> Sahayak is thinking...</div>}
+            {loading && <div className="flex gap-2 items-center text-green-400 text-sm ml-12"><Loader2 size={16} className="animate-spin" /> {t('chat.thinking')}</div>}
             <div ref={messagesEndRef} />
         </div>
 
@@ -184,7 +198,7 @@ export default function SahayakBot({ setActiveTab }) {
                 type="text" 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={isRecording ? "Listening..." : "Type or Click Mic..."}
+                placeholder={isRecording ? t('pest.listening') : t('chat.placeholder')}
                 disabled={isRecording}
                 className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-400 transition"
             />

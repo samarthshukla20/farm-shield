@@ -11,4 +11,4 @@ if not api_key:
 genai.configure(api_key=api_key)
 
 # "gemini-flash-latest" points to the stable version with better limits
-model = genai.GenerativeModel('gemini-flash-lite-latest')
+model = genai.GenerativeModel('gemini-2.5-flash')

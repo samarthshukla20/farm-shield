@@ -5,6 +5,7 @@ from router_crops import router as crops_router
 from router_weather import router as weather_router
 from router_pest import router as pest_router
 from router_chat import router as chat_router
+from router_mandi import router as mandi_router
 
 app = FastAPI()
 
@@ -18,8 +19,9 @@ app.add_middleware(
 
 app.include_router(crops_router)
 app.include_router(weather_router)
-app.include_router(pest_router)      # <--- NEW REGISTER
+app.include_router(pest_router)
 app.include_router(chat_router)
+app.include_router(mandi_router)
 
 @app.get("/")
 async def root():

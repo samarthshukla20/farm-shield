@@ -5,21 +5,29 @@ import CropAdvisor from './components/CropAdvisor';
 import WeatherStation from './components/WeatherStation';
 import PestScanner from './components/PestScanner';
 import SahayakBot from './components/SahayakBot';
+import MandiRates from './components/MandiRates';
+import { useTranslation } from 'react-i18next'; // 1. Import
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  
+  const { t, i18n } = useTranslation(); // 2. Initialize Hook
+
   // --- STATE FOR LIVE DATA ---
   const [currentDate, setCurrentDate] = useState('');
-  const [greeting, setGreeting] = useState('Welcome');
-  const [location, setLocation] = useState('Detecting Location...');
+  const [location, setLocation] = useState(t('header.detecting')); // Use translation for initial state
 
   // --- NEW: GLOBAL WEATHER STATE (Persists across tabs) ---
   const [weatherState, setWeatherState] = useState({
-    data: null,      // Stores the actual weather data
-    loading: false,  // Stores loading status
-    error: null      // Stores any errors
+    data: null,
+    loading: false,
+    error: null
   });
+
+  // --- LANGUAGE TOGGLE FUNCTION ---
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'hi' : 'en';
+    i18n.changeLanguage(newLang);
+  };
 
   // --- 1. ENABLE BROWSER BACK BUTTON ---
   useEffect(() => {
@@ -38,21 +46,18 @@ export default function App() {
     window.location.hash = tabId;
   };
 
-  // --- 2. HANDLE TIME & GREETING ---
+  // --- 2. HANDLE TIME ---
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
+      // Format date based on language (optional refinement)
       const options = { weekday: 'short', day: 'numeric', month: 'short' };
-      setCurrentDate(now.toLocaleDateString('en-GB', options));
-      const hour = now.getHours();
-      if (hour < 12) setGreeting("Good Morning");
-      else if (hour < 18) setGreeting("Good Afternoon");
-      else setGreeting("Good Evening");
+      setCurrentDate(now.toLocaleDateString(i18n.language === 'hi' ? 'hi-IN' : 'en-GB', options));
     };
     updateTime();
     const timer = setInterval(updateTime, 60000);
     return () => clearInterval(timer);
-  }, []);
+  }, [i18n.language]); // Update date format when language changes
 
   // --- 3. HANDLE LOCATION ---
   useEffect(() => {
@@ -86,7 +91,7 @@ export default function App() {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold mb-1">
-              {greeting}, User 🌿
+              {t('greeting')}, User 🌿
             </h1>
             <div className="flex items-center gap-2 text-green-200/80 text-sm font-medium">
               <span>{currentDate}</span>
@@ -98,9 +103,14 @@ export default function App() {
             </div>
           </div>
           
-          <button className="glass-panel px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-white/10 transition self-end md:self-auto">
+          <button 
+            onClick={toggleLanguage}
+            className="glass-panel px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-white/10 transition self-end md:self-auto cursor-pointer border border-white/10"
+          >
             <span>🌐</span>
-            <span className="font-semibold text-sm">English</span>
+            <span className="font-semibold text-sm">
+              {i18n.language === 'en' ? "English" : "हिंदी"}
+            </span>
           </button>
         </header>
 
@@ -113,6 +123,8 @@ export default function App() {
 
         {activeTab === 'bot' && <SahayakBot setActiveTab={navigate} />}
 
+        {activeTab === 'mandi' && <MandiRates setActiveTab={navigate} />}
+
         {/* --- PASS GLOBAL STATE TO WEATHER STATION --- */}
         {activeTab === 'weather' && (
           <WeatherStation 
@@ -122,7 +134,8 @@ export default function App() {
           />
         )}
         
-        {activeTab !== 'dashboard' && activeTab !== 'crops' && activeTab!=='pest' && activeTab!=='bot' && activeTab !== 'weather' && (
+        {/* Fallback for unknown tabs */}
+        {activeTab !== 'dashboard' && activeTab !== 'crops' && activeTab!=='pest' && activeTab!=='bot' && activeTab!=='mandi' && activeTab !== 'weather' && (
           <div className="glass-panel p-10 rounded-3xl text-center min-h-[400px] flex flex-col items-center justify-center">
             <h2 className="text-2xl font-bold text-white/50">Feature Coming Soon</h2>
             <p className="text-green-200/40 mt-2 mb-6">We are building the {activeTab} module.</p>
