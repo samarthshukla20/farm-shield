@@ -16,8 +16,6 @@ export default function Sidebar({ activeTab, setActiveTab }) {
   // and the checks in App.jsx (e.g. activeTab === 'weather')
   const menuItems = [
     { id: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutGrid },
-    { id: 'crops', label: t('sidebar.crops'), icon: Sprout },
-    { id: 'weather', label: t('sidebar.weather'), icon: CloudRain },
     { id: 'pest', label: t('sidebar.pest'), icon: Bug },
     { id: 'bot', label: t('sidebar.chat'), icon: MessageCircle }, // Maps 'bot' tab to 'Sahayak AI' label
     { id: 'mandi', label: t('sidebar.mandi'), icon: IndianRupee },
